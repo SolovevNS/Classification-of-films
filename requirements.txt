@@ -1,0 +1,25 @@
+pandas
+scikit-learn==1.2.2
+numpy==1.26.4
+matplotlib
+lightgbm
+nltk
+optuna
+spacy==3.7
+torch
+catboost
+plotly
+streamlit
+joblib
+requests
+requests-cache
+beautifulsoup4
+pysubs2
+subliminal
+transformers==4.28.0
+chardet
+babelfish
+pydantic
+requests
+opensubtitlescom
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl
