@@ -26,15 +26,15 @@ from opensubtitlescom import OpenSubtitles
 
 
 class TokenPatternString(BaseModel):
-    REGEX: Optional[str] = Field(None, alias="regex")
-    INCLUDED_VALUES: Optional[List[str]] = Field(None, alias="included_values")
-    NOT_IN: Optional[List[str]] = Field(None, alias="not_in")
+    REGEX: Optional[str] = Field(None, alias='regex')
+    INCLUDED_VALUES: Optional[List[str]] = Field(None, alias='included_values')
+    NOT_IN: Optional[List[str]] = Field(None, alias='not_in')
 
     class Config:
         populate_by_name = True
 
 # Установите устройство (GPU или CPU)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def clear_memory():
     gc.collect()
@@ -113,9 +113,9 @@ def download_subtitles(movie_name):
 
     if subtitles[video]:
         subtitle = subtitles[video][0]
-        subtitle_path = f"{movie_name}.srt"
+        subtitle_path = f'{movie_name}.srt'
         save_subtitles(video, [subtitle], single=True)
-        logging.info(f"Субтитры найдены с помощью Subliminal для: {movie_name}")
+        logging.info(f'Субтитры найдены с помощью Subliminal для: {movie_name}')
 
         with open(subtitle_path, 'rb') as f:
             raw_data = f.read()
@@ -128,12 +128,12 @@ def download_subtitles(movie_name):
         os.remove(subtitle_path)
         return subtitles_text
     else:
-        logging.info(f"Субтитры не найдены с помощью Subliminal для: {movie_name}. Поиск с помощью OpenSubtitles.")
+        logging.info(f'Субтитры не найдены с помощью Subliminal для: {movie_name}. Поиск с помощью OpenSubtitles.')
         return search_with_opensubtitles(movie_name)
 
 def search_with_opensubtitles(movie_name):
     # Инициализация клиента OpenSubtitles
-    subtitles_client = OpenSubtitles("Streamlit/1.35.0", API_KEY)
+    subtitles_client = OpenSubtitles('Streamlit/1.35.0', API_KEY)
 
     # Логин (получение токена аутентификации)
     subtitles_client.login(USERNAME, PASSWORD)
@@ -146,7 +146,7 @@ def search_with_opensubtitles(movie_name):
         srt = subtitles_client.download_and_parse(response.data[0])
         
         # Определение пути к субтитрам
-        subtitle_path = f"{movie_name}.srt"
+        subtitle_path = f'{movie_name}.srt'
         
         with open(subtitle_path, 'w', encoding='utf-8') as f:
             for subtitle in srt:
@@ -213,8 +213,8 @@ if movie_name:
             y_pred_final[:, i] = y_proba[:, i] >= best_thresholds[i]
         y_pred_class = np.argmax(y_pred_final, axis=1)
 
-        level_mapping = {0: "A2", 1: "B1", 2: "B2", 3: "C1"}
-        recommended_level = level_mapping.get(y_pred_class[0], "Unknown")
+        level_mapping = {0: 'A2', 1: 'B1', 2: 'B2', 3: 'C1'}
+        recommended_level = level_mapping.get(y_pred_class[0], 'Unknown')
 
         st.write(f"Рекомендуется к просмотру с уровнем знания английского языка: {recommended_level}")
 
