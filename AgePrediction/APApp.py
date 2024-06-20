@@ -11,6 +11,7 @@ import torch.nn as nn
 import logging
 
 # Установка уровня логирования для отладки
+# Установка уровня логирования для отладки
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -21,7 +22,7 @@ def clear_memory():
         torch.cuda.empty_cache()
 
 
-@st.cache_resource
+@st.cache(allow_output_mutation=True)
 def load_age_model():
     class AgeModel(nn.Module):
         def __init__(self):
@@ -93,56 +94,64 @@ def predict_ages(faces_pil, model):
     return age_ranges
 
 
-# Заголовок и описание приложения
-st.title('Определение возраста по фото')
-st.write('Загрузите изображение, и нейросеть предскажет примерный возраст.')
+# Основное тело Streamlit приложения
+def main():
+    # Заголовок и описание приложения
+    st.title('Определение возраста по фото')
+    st.write('Загрузите изображение, и нейросеть предскажет примерный возраст.')
 
-# Загрузка изображения
-uploaded_file = st.file_uploader('Выберите изображение...', type=['jpg', 'jpeg', 'png'])
+    # Загрузка изображения
+    uploaded_file = st.file_uploader('Выберите изображение...', type=['jpg', 'jpeg', 'png'])
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.write('')
-    st.write('Поиск людей и предсказание возраста...')
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        st.write('')
+        st.write('Поиск людей и предсказание возраста...')
 
-    # Преобразование изображения в формат numpy
-    image_np = np.array(image)
-    image_cv = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+        # Преобразование изображения в формат numpy и OpenCV
+        image_np = np.array(image)
+        image_cv = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
 
-    # Обнаружение лиц
-    faces = RetinaFace.detect_faces(image_cv)
-    logging.debug(f'Detected faces: {faces}')
+        # Обнаружение лиц с помощью RetinaFace
+        faces = RetinaFace.detect_faces(image_cv)
+        logging.debug(f'Detected faces: {faces}')
 
-    if faces:
-        st.write(f'Обнаружено {len(faces)} человек(а).')
+        if faces:
+            st.write(f'Обнаружено {len(faces)} человек(а).')
 
-        # Список лиц в формате PIL
-        faces_pil = [Image.fromarray(image_np[face['facial_area'][1]:face['facial_area'][3],
-                                     face['facial_area'][0]:face['facial_area'][2]]) for face in faces.values()]
+            # Список лиц в формате PIL
+            faces_pil = [Image.fromarray(image_np[face['facial_area'][1]:face['facial_area'][3],
+                                         face['facial_area'][0]:face['facial_area'][2]]) for face in faces.values()]
 
-        # Предсказать возраст для всех лиц
-        age_ranges = predict_ages(faces_pil, model)
+            # Предсказать возраст для всех лиц
+            age_ranges = predict_ages(faces_pil, model)
 
-        # Обработать каждое лицо и аннотировать изображение
-        for i, (key, face) in enumerate(faces.items()):
-            facial_area = face['facial_area']
-            age_range = age_ranges[i]
-            text = f'{age_range[0]}-{age_range[1]}'
-            logging.debug(f'Facial area: {facial_area}')
+            # Обработать каждое лицо и аннотировать изображение
+            for i, (key, face) in enumerate(faces.items()):
+                facial_area = face['facial_area']
+                age_range = age_ranges[i]
+                text = f'{age_range[0]}-{age_range[1]}'
+                logging.debug(f'Facial area: {facial_area}')
 
-            # Нарисовать прямоугольник вокруг лица
-            draw = ImageDraw.Draw(image)
-            draw.rectangle([facial_area[0], facial_area[1], facial_area[2], facial_area[3]], outline="red", width=2)
+                # Нарисовать прямоугольник вокруг лица
+                draw = ImageDraw.Draw(image)
+                draw.rectangle([facial_area[0], facial_area[1], facial_area[2], facial_area[3]], outline="red", width=2)
 
-            # Добавить текст с предсказанным возрастом над лицом
-            font = ImageFont.truetype('./AgePrediction/arial.ttf', size=15)
-            text_width, text_height = draw.textsize(text, font=font)
-            text_position = (facial_area[0] + (facial_area[2] - facial_area[0]) // 2 - text_width // 2,
-                             max(facial_area[1] - text_height - 5, 0))
-            draw.text(text_position, text, fill="red", font=font)
+                # Загрузить шрифт
+                font_path = './AgePrediction/arial.ttf'
+                font_size = 15
+                font = ImageFont.truetype(font_path, size=font_size)
 
-        st.image(image, caption='Обнаруженные люди с возрастом', use_column_width=True)
-    else:
-        st.write('Люди на фото не обнаружены.')
+                # Добавить текст с предсказанным возрастом над лицом
+                text_width, text_height = font.getsize(text)
+                text_position = (facial_area[0] + (facial_area[2] - facial_area[0]) // 2 - text_width // 2,
+                                 max(facial_area[1] - text_height - 5, 0))
+                draw.text(text_position, text, fill="red", font=font)
 
-clear_memory()
+            # Отобразить изображение с аннотациями
+            st.image(image, caption='Обнаруженные люди с возрастом', use_column_width=True)
+        else:
+            st.write('Люди на фото не обнаружены.')
+
+    # Очистить память после обработки изображения
+    clear_memory()
