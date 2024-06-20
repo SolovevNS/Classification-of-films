@@ -10,8 +10,6 @@ import timm
 import torch.nn as nn
 import logging
 
-# Установка уровня логирования для отладки
-# Установка уровня логирования для отладки
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -127,6 +125,7 @@ def main():
             age_ranges = predict_ages(faces_pil, model)
 
             # Обработать каждое лицо и аннотировать изображение
+            draw = ImageDraw.Draw(image)
             for i, (key, face) in enumerate(faces.items()):
                 facial_area = face['facial_area']
                 age_range = age_ranges[i]
@@ -134,7 +133,6 @@ def main():
                 logging.debug(f'Facial area: {facial_area}')
 
                 # Нарисовать прямоугольник вокруг лица
-                draw = ImageDraw.Draw(image)
                 draw.rectangle([facial_area[0], facial_area[1], facial_area[2], facial_area[3]], outline="red", width=2)
 
                 # Загрузить шрифт
@@ -143,7 +141,7 @@ def main():
                 font = ImageFont.truetype(font_path, size=font_size)
 
                 # Добавить текст с предсказанным возрастом над лицом
-                text_width, text_height = font.getsize(text)
+                text_width, text_height = draw.textsize(text, font=font)
                 text_position = (facial_area[0] + (facial_area[2] - facial_area[0]) // 2 - text_width // 2,
                                  max(facial_area[1] - text_height - 5, 0))
                 draw.text(text_position, text, fill="red", font=font)
