@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from facenet_pytorch import RetinaFace
+from retinaface import RetinaFace
 import timm
 import torch.nn as nn
 import logging
