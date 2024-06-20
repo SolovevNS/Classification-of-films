@@ -5,7 +5,7 @@ import streamlit as st
 import torch
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw, ImageFont
-from facenet_pytorch import RetinaFace
+from retinaface import RetinaFace
 import timm
 import torch.nn as nn
 import logging
