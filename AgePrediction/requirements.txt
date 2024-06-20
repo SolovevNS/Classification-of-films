@@ -1,0 +1,10 @@
+streamlit
+torch
+torchvision
+timm
+retina-face==0.0.17
+tensorflow
+tf-keras
+Pillow
+numpy==1.26.4
+opencv-python-headless
