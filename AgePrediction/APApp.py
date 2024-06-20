@@ -62,9 +62,9 @@ def predict_age(image, model):
     with torch.no_grad():
         age = model(image).item()
         # Увеличить диапазон предсказания для крайних возрастных групп
-        if age < 20:
+        if age < 18:
             lower_bound, upper_bound = int(age) - 3, int(age) + 3
-        elif age > 50:
+        elif age > 59:
             lower_bound, upper_bound = int(age) - 5, int(age) + 5
         else:
             lower_bound, upper_bound = int(age) - 2, int(age) + 2
@@ -82,9 +82,9 @@ def predict_ages(faces_pil, model):
         ages = model(batch_tensor).view(-1).tolist()
         age_ranges = []
         for age in ages:
-            if age < 20:
+            if age < 18:
                 lower_bound, upper_bound = int(age) - 3, int(age) + 3
-            elif age > 50:
+            elif age > 59:
                 lower_bound, upper_bound = int(age) - 5, int(age) + 5
             else:
                 lower_bound, upper_bound = int(age) - 2, int(age) + 2
@@ -135,7 +135,7 @@ if uploaded_file is not None:
             draw.rectangle([facial_area[0], facial_area[1], facial_area[2], facial_area[3]], outline="red", width=2)
 
             # Добавить текст с предсказанным возрастом над лицом
-            font = ImageFont.truetype("arial.ttf", size=15)
+            font = ImageFont.truetype('./AgePrediction/arial.ttf', size=15)
             text_width, text_height = draw.textsize(text, font=font)
             text_position = (facial_area[0] + (facial_area[2] - facial_area[0]) // 2 - text_width // 2,
                              max(facial_area[1] - text_height - 5, 0))
