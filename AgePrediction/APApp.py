@@ -8,29 +8,42 @@ import timm
 import cv2
 import torch.nn as nn
 import logging
+import gc
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Определение модели для предсказания возраста
-class AgeModel(nn.Module):
-    def __init__(self):
-        super(AgeModel, self).__init__()
-        model_path = './AgePrediction/age_model.pth'
-        self.model = timm.create_model('hf_hub/tiny_vit_11m_224.dist_in22k_ft_in1k', pretrained=True)
-        self.model.reset_classifier(num_classes=0)
-        self.dropout = nn.Dropout(0.3)
-        self.fc = nn.Linear(self.model.num_features * 7 * 7, 1)
-        self.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+# Установите устройство (GPU или CPU)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def forward(self, x):
-        x = self.model.forward_features(x)
-        x = self.dropout(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
-        return x
+def clear_memory():
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
-model = AgeModel()
-model.eval()
+@st.cache_resource
+def load_age_model():
+    class AgeModel(nn.Module):
+        def __init__(self):
+            super(AgeModel, self).__init__()
+            model_path = './AgePrediction/age_model.pth'
+            self.model = timm.create_model('hf_hub/tiny_vit_11m_224.dist_in22k_ft_in1k', pretrained=True)
+            self.model.reset_classifier(num_classes=0)
+            self.dropout = nn.Dropout(0.3)
+            self.fc = nn.Linear(self.model.num_features * 7 * 7, 1)
+            self.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+
+        def forward(self, x):
+            x = self.model.forward_features(x)
+            x = self.dropout(x)
+            x = x.view(x.size(0), -1)
+            x = self.fc(x)
+            return x
+
+    model = AgeModel().to(device)
+    model.eval()
+    return model
+
+model = load_age_model()
 
 # Трансформации изображения
 transform = transforms.Compose([
@@ -41,7 +54,7 @@ transform = transforms.Compose([
 
 # Функция для предсказания возраста
 def predict_age(image, model):
-    image = transform(image).unsqueeze(0)
+    image = transform(image).unsqueeze(0).to(device)
     logging.debug(f'Transformed image shape: {image.shape}')
     with torch.no_grad():
         age = model(image).item()
@@ -106,3 +119,5 @@ if uploaded_file is not None:
         st.image(image_with_annotations, caption='Обнаруженные люди с возрастом', use_column_width=True)
     else:
         st.write('Люди на фото не обнаружены.')
+
+clear_memory()
