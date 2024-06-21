@@ -58,8 +58,12 @@ def predict_age(image, model):
     logging.debug(f'Transformed image shape: {image.shape}')
     with torch.no_grad():
         age = model(image).item()
-        lower_bound = int(age) - 2
-        upper_bound = int(age) + 2
+        if 20 <= age <= 60:
+            lower_bound = int(age) - 2
+            upper_bound = int(age) + 2
+        else:
+            lower_bound = int(age) - 3
+            upper_bound = int(age) + 3
         age_str = f'{lower_bound}-{upper_bound}'
         logging.debug(f'Predicted age: {age_str}')
     return age_str
