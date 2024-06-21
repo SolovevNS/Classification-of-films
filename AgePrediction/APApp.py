@@ -12,7 +12,6 @@ import gc
 
 logging.basicConfig(level=logging.DEBUG)
 
-# Установите устройство (GPU или CPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def clear_memory():
@@ -45,14 +44,12 @@ def load_age_model():
 
 model = load_age_model()
 
-# Трансформации изображения
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# Функция для предсказания возраста
 def predict_age(image, model):
     image = transform(image).unsqueeze(0).to(device)
     logging.debug(f'Transformed image shape: {image.shape}')
@@ -68,11 +65,21 @@ def predict_age(image, model):
         logging.debug(f'Predicted age: {age_str}')
     return age_str
 
-# Заголовок и описание приложения
 st.title('Определение возраста по фото')
 st.write('Загрузите изображение, и нейросеть предскажет примерный возраст.')
 
-# Загрузка изображения
+st.markdown("""
+<style>
+.small-font {
+    font-size: 12px;
+}
+</style>
+<div class="small-font">
+* Точность предсказания зависит от качества загруженного изображения и четкости лица на фотографии.<br>
+* Из-за особенностей работы модели, результаты могут быть менее точными для детей и пожилых людей.
+</div>
+""", unsafe_allow_html=True)
+
 uploaded_file = st.file_uploader('Выберите изображение...', type=['jpg', 'jpeg', 'png'])
 
 if uploaded_file is not None:
