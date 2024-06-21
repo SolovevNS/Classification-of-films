@@ -33,7 +33,6 @@ class TokenPatternString(BaseModel):
     class Config:
         populate_by_name = True
 
-# Установите устройство (GPU или CPU)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def clear_memory():
@@ -75,7 +74,6 @@ def load_model_and_thresholds():
 
 voting_clf, best_thresholds = load_model_and_thresholds()
 
-# Функции для очистки и обработки текста
 def is_word_in_wordnet(word):
     return bool(wordnet.synsets(word))
 
@@ -132,43 +130,34 @@ def download_subtitles(movie_name):
         return search_with_opensubtitles(movie_name)
 
 def search_with_opensubtitles(movie_name):
-    # Инициализация клиента OpenSubtitles
+
     subtitles_client = OpenSubtitles('Streamlit/1.35.0', API_KEY)
-
-    # Логин (получение токена аутентификации)
     subtitles_client.login(USERNAME, PASSWORD)
-
-    # Поиск субтитров
     response = subtitles_client.search(query=movie_name, languages="en")
 
     if response.data:
-        # Получение субтитров из первого ответа
+
         srt = subtitles_client.download_and_parse(response.data[0])
-        
-        # Определение пути к субтитрам
         subtitle_path = f'{movie_name}.srt'
         
         with open(subtitle_path, 'w', encoding='utf-8') as f:
             for subtitle in srt:
                 f.write(str(subtitle))
-        
-        # Определение кодировки
+
         with open(subtitle_path, 'rb') as f:
             raw_data = f.read()
             result = chardet.detect(raw_data)
             encoding = result['encoding']
-        
-        # Чтение субтитров с правильной кодировкой
+
         with open(subtitle_path, 'r', encoding=encoding) as f:
             subtitles_text = f.read()
-        
-        # Удаление временного файла с субтитрами
+
         os.remove(subtitle_path)
         
-        logging.info(f"Субтитры найдены с помощью OpenSubtitles для: {movie_name}")
+        logging.info(f'Субтитры найдены с помощью OpenSubtitles для: {movie_name}')
         return subtitles_text
     else:
-        logging.error(f"Субтитры не найдены с помощью OpenSubtitles для: {movie_name}")
+        logging.error(f'Субтитры не найдены с помощью OpenSubtitles для: {movie_name}')
         return None
 st.title('Оптимальные фильмы для вашего уровня английского')
 
