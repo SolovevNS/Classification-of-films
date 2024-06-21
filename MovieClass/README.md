@@ -101,3 +101,5 @@
 ### Лицензия
 В приложении используется 
 OpenSubtitles Wrapper лицензирован под MIT License. Полный текст лицензии можно найти https://github.com/dusking/opensubtitles-com/blob/main/LICENSE
+
+Предобученный Longformer https://huggingface.co/allenai/longformer-base-4096
